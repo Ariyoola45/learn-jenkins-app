@@ -26,8 +26,38 @@ pipeline{
             steps{
                 sh '''
                 text -f build/index.html
-                npm test
+                npm test`
                 '''
+            }
+        }
+        stage{'deploy to Render'}{
+         agent{
+            docker{
+                image 'node:18'
+                reuseNode true
+                
+            }
+           }
+            steps{
+            //   withCredentials([string(credentialsId: 'RENDER_API_KEY', variable: 'RENDER_API_KEY')]) {
+                sh '''
+
+                curl -fsSL https://raw.githubusercontent.com/render-oss/cli/refs/heads/main/bin/install.sh | sh
+                render --version 
+
+                '''
+              
+            }
+        }
+        port{
+            always{
+                junit 'test-results/junit.xml'
+            }
+            success{
+                echo 'pipeline cpmpleted  - app deployed to Render successfully'
+            }
+            failure{
+                echo 'pipeline failed - deployment to render  did not occor '
             }
         }
        
