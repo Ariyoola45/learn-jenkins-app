@@ -52,7 +52,7 @@ pipeline {
             }
 
             steps {
-                withCredentials([string(credentialsId: 'RENDER_API_KEY', variable: 'RENDER_API_KEY')]) {
+                withCredentials([string(credentialsId: 'RENDER-API-KEY', variable: 'RENDER-API-KEY')]) {
                     sh '''
                         echo "Deploying to Render..."
 
