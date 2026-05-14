@@ -1,65 +1,80 @@
-pipeline{
+pipeline {
     agent any
-    stages{
-        stage('Build'){
-           agent{
-            docker{
-                image 'node:18-alpine'
-                reuseNode true
-                
-            }
-           }
-            steps{
-                sh '''
-                la -la
-                node --version
-                npm --version
-                npm ci
-                npm run build
-                ls -la
 
+    stages {
+
+        stage('Build') {
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                    reuseNode true
+                }
+            }
+
+            steps {
+                sh '''
+                    ls -la
+                    node --version
+                    npm --version
+                    npm ci
+                    npm run build
+                    ls -la
                 '''
             }
         }
 
-        stage('Test'){
-            steps{
+        stage('Test') {
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                    reuseNode true
+                }
+            }
+
+            steps {
                 sh '''
-                text -f build/index.html
-                npm test`
+                    test -f build/index.html
+                    npm test
                 '''
             }
         }
-        stage('deploy to Render'){
-         agent{
-            docker{
-                image 'node:18'
-                reuseNode true
-                
+
+        stage('Deploy to Render') {
+            agent {
+                docker {
+                    image 'node:18'
+                    reuseNode true
+                }
             }
-           }
-            steps{
-            //   withCredentials([string(credentialsId: 'RENDER_API_KEY', variable: 'RENDER_API_KEY')]) {
+
+            steps {
+                // withCredentials([string(credentialsId: 'RENDER_API_KEY', variable: 'RENDER_API_KEY')]) {
+
                 sh '''
+                    curl -fsSL https://raw.githubusercontent.com/render-oss/cli/refs/heads/main/bin/install.sh | sh
 
-                curl -fsSL https://raw.githubusercontent.com/render-oss/cli/refs/heads/main/bin/install.sh | sh
-                render --version 
+                    export PATH="$HOME/.local/bin:$PATH"
 
+                    render --version
                 '''
-              
+
+                // }
             }
         }
-        post{
-            always{
-                junit 'test-results/junit.xml'
-            }
-            success{
-                echo 'pipeline cpmpleted  - app deployed to Render successfully'
-            }
-            failure{
-                echo 'pipeline failed - deployment to render  did not occor '
-            }
+    }
+
+    post {
+
+        always {
+            junit 'test-results/junit.xml'
         }
-       
+
+        success {
+            echo 'Pipeline completed - app deployed to Render successfully'
+        }
+
+        failure {
+            echo 'Pipeline failed - deployment to Render did not occur'
+        }
     }
 }
