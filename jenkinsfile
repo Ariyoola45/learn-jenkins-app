@@ -30,7 +30,7 @@ pipeline{
                 '''
             }
         }
-        stage{'deploy to Render'}{
+        stage('deploy to Render'){
          agent{
             docker{
                 image 'node:18'
