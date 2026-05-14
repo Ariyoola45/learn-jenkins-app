@@ -59,28 +59,37 @@ stage('Build') {
             }
         }
 
-        stage('Deploy to Render') {
-            agent {
-                docker {
-                    image 'node:18'
-                    reuseNode true
-                }
-            }
-
-            steps {
-                withCredentials([string(credentialsId: 'RENDER_API_KEY', variable: 'RENDER_API_KEY')]) {
-
-                sh '''
-                    curl -fsSL https://raw.githubusercontent.com/render-oss/cli/refs/heads/main/bin/install.sh | sh
-
-                    export PATH="$HOME/.local/bin:$PATH"
-
-                    render --version
-                '''
-
-                }
-            }
+     stage('Deploy to Render') {
+    agent {
+        docker {
+            image 'node:18'
+            reuseNode true
         }
+    }
+
+    steps {
+
+        withCredentials([string(credentialsId: 'RENDER_API_KEY', variable: 'RENDER_API_KEY')]) {
+
+            sh '''
+                echo "Installing Render CLI..."
+
+                curl -fsSL https://raw.githubusercontent.com/render-oss/cli/refs/heads/main/bin/install.sh | bash
+
+                export PATH="$HOME/.local/bin:$PATH"
+
+                echo "Checking Render CLI..."
+                render --version
+
+                echo "Deploying to Render..."
+
+                render deploys create YOUR_SERVICE_ID --output json
+
+                echo "Deploy completed"
+            '''
+        }
+    }
+}
     }
 
     post {
