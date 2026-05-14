@@ -69,7 +69,7 @@ pipeline {
 
     post {
         always {
-            junit 'test-results/junit.xml' || true
+            junit 'test-results/junit.xml' 
         }
 
         success {
